@@ -52,3 +52,41 @@ try {
 export const auth =async(req,res)=>{
 
 }
+
+export const refresh = async (req, res) => {
+  try {
+    const ref = req.cookies.refToken;
+
+    const match = jwt.verify(
+      ref,
+      process.env.REFRESH_SECRET
+    );
+
+    if (!match) {
+      return res.status(400).json({
+        msg: "invalid token"
+      });
+    }
+
+    const acc = jwt.sign(
+      {
+        id: match.id,
+        email: match.email
+      },
+      process.env.ACCESS_SECRET,
+      {
+        expiresIn: "15m"
+      }
+    );
+
+    res.status(200).json({
+      msg: "new access token generated",
+      accessToken: acc
+    });
+
+  } catch (error) {
+    res.status(400).json({
+      msg: "cookie error"
+    });
+  }
+};
